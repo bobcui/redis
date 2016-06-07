@@ -43,33 +43,39 @@ typedef struct zlentry {
     unsigned char *p;
 } zlentry;
 
+layout:
+    <zlbytes><zltail><zllen><entry><entry><zlend>
 
 /*******************************************************************/
 /* intset
 /*******************************************************************/
-ordered integer vector
+asc-sorted integer vector
 
+/*******************************************************************/
+/* quicklist
+/*******************************************************************/
+quicklist.c - A doubly linked list of ziplists
+layout:
+    ziplist <-> ziplist <-> ziplist
 
 
 /*******************************************************************/
 /* O(?) comparison
 /*******************************************************************/
-        set/add    get     getall    exist    del
-
-ziplist    N        N        N         N       N
-dict       1        1        N         1       1 
-intset        1        1        N         1       1
-
-list       N        N        N         N       N
+            set     get    exist    del   mem-in-a-row
+dict         1       1       n       1        N
+ziplist      n       n       n       n        Y
+intset     log(n)  log(n)  log(n)  log(n)     Y
+quicklist    n       n       n       n     Partial
 
 
 /*******************************************************************/
-/* O(?) comparison
+/* type to data structure
 /*******************************************************************/
-t_hash      ziplist / dict
-t_zset      dict / intset
-t_list      
-t_zset
+t_hash      ziplist | dict
+t_zset      dict | intset
+t_list      quicklist
+t_zset      zskiplist & dict
 
 /*******************************************************************/
 /* HSet Command

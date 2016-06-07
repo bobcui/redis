@@ -20,17 +20,6 @@ select db
 
 
 
-4. O(?)
-
-        set/add    get     getall    exist    del
-
-dict       1        1        N         1       1 
-set        1        1        N         1       1
-ziplist    N        N        N         N       N
-list       N        N        N         N       N
-
-
-
 transparent_hugepage always
 vm.overcommit_memory=0
 
