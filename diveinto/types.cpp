@@ -139,7 +139,7 @@ http://www.tuicool.com/articles/J7rQRb
 /*  time complexity O(?) comparison
 /*******************************************************************/
             set     get    find     del   mem-in-a-row
-dict         1       1       n       1        N
+dict         1       1       1       1        N
 ziplist      n       n       n       n        Y
 intset     log(n)  log(n)  log(n)  log(n)     Y
 quicklist    n       n       n       n     Partial
