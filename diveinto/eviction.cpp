@@ -99,7 +99,7 @@ void activeExpireCycle(int type) {
         timelimit = 1ms
     }
     else {  // SLOW
-        timelimit = 25% ht time
+        timelimit = 25% hz time
     }
 
     while (time < timelimit) {

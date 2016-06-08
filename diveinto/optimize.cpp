@@ -16,26 +16,13 @@ http://blog.csdn.net/chosen0ne/article/details/46625359
 
 
 3. use databases
-select db
 
+4. use ziplist properly
 
+5. use proper types
 
-transparent_hugepage always
-vm.overcommit_memory=0
+6. keep connection alive 
 
-1. command: 160 latency spikes (average 19ms, mean deviation 5ms, period 1.00 sec). Worst all time event 40ms.
-2. fast-command: 160 latency spikes (average 14ms, mean deviation 4ms, period 1.05 sec). Worst all time event 26ms.
+7. 持久化的取舍
 
-
-transparent_hugepage never
-vm.overcommit_memory=0
-
-1. command: 160 latency spikes (average 22ms, mean deviation 6ms, period 1.00 sec). Worst all time event 45ms.
-2. fast-command: 160 latency spikes (average 16ms, mean deviation 3ms, period 1.23 sec). Worst all time event 53ms.
-
-
-transparent_hugepage never
-vm.overcommit_memory=1
-
-1. command: 160 latency spikes (average 15ms, mean deviation 4ms, period 0.99 sec). Worst all time event 56ms.
-2. fast-command: 160 latency spikes (average 11ms, mean deviation 3ms, period 0.99 sec). Worst all time event 19ms.
+8. use slowlog & latency

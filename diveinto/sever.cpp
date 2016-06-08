@@ -38,8 +38,16 @@ int main(int argc, char **argv) {
         //     server.db[j].id = j;
         //     server.db[j].avg_ttl = 0;
         // } 
-
-    // ...
+        
+        // register listen fd read event
+        // for (j = 0; j < server.ipfd_count; j++) {
+        //     if (aeCreateFileEvent(server.el, server.ipfd[j], AE_READABLE,
+        //         acceptTcpHandler,NULL) == AE_ERR)
+        //         {
+        //             serverPanic(
+        //                 "Unrecoverable error creating server.ipfd file event.");
+        //         }
+        // }
 
     aeSetBeforeSleepProc(server.el,beforeSleep);
     aeMain(server.el);
@@ -63,119 +71,32 @@ void aeMain(aeEventLoop *eventLoop) {
 }
 
 
-/*******************************************************************/
-/* deep in server
-/*******************************************************************/
-// server.c
-void beforeSleep(struct aeEventLoop *eventLoop) {
-    // ...
-    /* Run a fast expire cycle (the called function will return
-     * ASAP if a fast cycle is not needed). */
-    activeExpireCycle(ACTIVE_EXPIRE_CYCLE_FAST);
-    // ...
-    /* Write the AOF buffer on disk */
-    flushAppendOnlyFile(0);
-    // ...
-}
-
-// aof.c
-void flushAppendOnlyFile(int force) {
-    // if appendonly == yes
-
-    // ...
-    // bioPendingJobsOfType() will call pthread_mutex_lock()
-    if (server.aof_fsync == AOF_FSYNC_EVERYSEC)
-        sync_in_progress = bioPendingJobsOfType(BIO_AOF_FSYNC) != 0;
-    // ...
-
-    /* We want to perform a single write. This should be guaranteed atomic
-     * at least if the filesystem we are writing is a real physical one.
-     * While this will save us against the server being killed I don't think
-     * there is much to do about the whole server stopping for power problems
-     * or alike */
-
-    // write blocking or nonblocking?
-    // from Advanced Programming in the UNIX Environment 2nd Ed:
-    // "We also said that system calls related to disk I/O are not considered slow, 
-    // even though the read or write of a disk file can block the caller temporarily."
-    // see more:
-    //   http://stackoverflow.com/questions/4434223/non-blocking-write-to-file-in-c-c
-    //   http://blog.empathybox.com/post/35088300798/why-does-fwrite-sometimes-block
-
-    // But the background io thread maybe call fsync() at the same time
-    // man fsync:
-    //   This normally results in all in-core modified copies of buffers 
-    //   for the associated file to be written to a disk.
-    nwritten = write(server.aof_fd,server.aof_buf,sdslen(server.aof_buf));
-    // ...
-
-    /* Don't fsync if no-appendfsync-on-rewrite is set to yes and there are
-     * children doing I/O in the background. */
-    if (server.aof_no_fsync_on_rewrite &&
-        (server.aof_child_pid != -1 || server.rdb_child_pid != -1))
-            return;
-
-    /* Perform the fsync if needed. */
-    if (server.aof_fsync == AOF_FSYNC_ALWAYS) {
-        // ...
-        /* aof_fsync is defined as fdatasync() for Linux in order to avoid
-         * flushing metadata. */
-        aof_fsync(server.aof_fd); /* Let's try to get this data on the disk */
-        // ...
-    } else if ((server.aof_fsync == AOF_FSYNC_EVERYSEC &&
-        // ...
-        // aof_background_fsync will put fd to the bg thread queue, will call pthread_mutex_lock()
-        if (!sync_in_progress) aof_background_fsync(server.aof_fd);
-        // ...
-    }
-}
-
-
-/* This is our timer interrupt, called server.hz times per second.
- * Here is where we do a number of things that need to be done asynchronously.
- * For instance:
+/* Process every pending time event, then every pending file event
+ * (that may be registered by time event callbacks just processed).
+ * Without special flags the function sleeps until some file event
+ * fires, or when the next time event occurs (if any).
  *
- * - Active expired keys collection (it is also performed in a lazy way on
- *   lookup).
- * - Software watchdog.
- * - Update some statistic.
- * - Incremental rehashing of the DBs hash tables.
- * - Triggering BGSAVE / AOF rewrite, and handling of terminated children.
- * - Clients timeout of different kinds.
- * - Replication reconnection.
- * - Many more...
+ * If flags is 0, the function does nothing and returns.
+ * if flags has AE_ALL_EVENTS set, all the kind of events are processed.
+ * if flags has AE_FILE_EVENTS set, file events are processed.
+ * if flags has AE_TIME_EVENTS set, time events are processed.
+ * if flags has AE_DONT_WAIT set the function returns ASAP until all
+ * the events that's possible to process without to wait are processed.
  *
- * Everything directly called here will be called server.hz times per second,
- * so in order to throttle execution of things we want to do less frequently
- * a macro is used: run_with_period(milliseconds) { .... }
- */
-int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientData) {
-    // ...
+ * The function returns the number of events processed. */
+int aeProcessEvents(aeEventLoop *eventLoop, int flags)
+{
+    numevents = aeApiPoll(eventLoop, tvp);  // block here
+    for (j = 0; j < numevents; j++) {
 
-    /* We need to do a few operations on clients asynchronously. */
-    // close timeout client
-    // resize client query buffer 
-    clientsCron();
-
-    /* Handle background operations on Redis databases. */
-    databasesCron();
-
-    /* Start a scheduled AOF rewrite if this was requested by the user while
-     * a BGSAVE was in progress. */
-    if (server.rdb_child_pid == -1 && server.aof_child_pid == -1 &&
-        server.aof_rewrite_scheduled)
-    {
-        rewriteAppendOnlyFileBackground();
+        if (j is read event) {
+            rfileProc(j) 
+        }
+        if (j is write event) {
+            wfileProc(j)
+        }
     }
 
+    timeProc()
 }
-
-/*
-Memory of fork():
-    The Linux kernel does implement Copy-on-Write when fork() is called. 
-    When the syscall is executed, the pages that the parent and child share are marked read-only.
-    If a write is performed on the read-only page, it is then copied, 
-    as the memory is no longer identical between the two processes. 
-    Therefore, if only read-operations are being performed, the pages will not be copied at all.
- */
 
