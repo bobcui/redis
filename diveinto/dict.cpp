@@ -66,8 +66,7 @@ dictEntry *dictAddRaw(dict *d, void *key)
 /*******************************************************************/
 // dictAddRaw() {
 //     _dictKeyIndex()
-//         _dictKeyIndex()
-//             _dictExpandIfNeeded()
+//         _dictExpandIfNeeded()
 // }
 static int _dictExpandIfNeeded(dict *d)
 {
