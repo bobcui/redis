@@ -15,14 +15,19 @@ overcommit_memory文件指定了内核针对内存分配的策略，其值可以
 http://blog.csdn.net/chosen0ne/article/details/46625359
 
 
-3. use databases
+3. set up cpu cores - 1 redis servers
 
-4. use ziplist properly
+4. try to use more than one databases in one redis server
 
-5. use proper types
+5. use ziplist properly
 
-6. keep connection alive 
+6. know types well, use them properly
 
-7. 持久化的取舍
+7. know rdb & aof well, use them in the proper scenario
 
-8. use slowlog & latency
+8. keep connection alive if possible
+
+9. use commands info, slowlog & latency to find the 
+    info commandstats
+    slowlog get 5
+    latency doctor
