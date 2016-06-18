@@ -479,6 +479,37 @@ void hashTypeConvert(robj *o, int enc) {
     }
 }
 
+
+int hashKeyValueLengthOverMax(client *c, robj *k, robj *v) {
+    size_t len;
+    if (server.hash_key_maxlength) {
+        len = stringObjectLen(k);
+        if (len > server.hash_key_maxlength)  {
+            addReplyErrorFormat(c,"hash key length exceed the max(%zd), length=%zd", server.hash_key_maxlength, len);
+            return 1;
+        }
+    }
+    if (server.hash_value_maxlength) {
+        len = stringObjectLen(v);
+        if (len > server.hash_value_maxlength)  {
+            addReplyErrorFormat(c,"hash value length exceed the max(%zd), length=%zd", server.hash_value_maxlength, len);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int hashEntryCountOverMax(client *c, robj *o, int count) {
+    if (server.hash_entry_maxcount) {
+        size_t afterCount = hashTypeLength(o) + count;
+        if (afterCount > server.hash_entry_maxcount) {
+            addReplyErrorFormat(c,"hash entry count exceed the max(%zd), entry count will be %lu", server.hash_entry_maxcount, afterCount);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /*-----------------------------------------------------------------------------
  * Hash type commands
  *----------------------------------------------------------------------------*/
@@ -487,7 +518,10 @@ void hsetCommand(client *c) {
     int update;
     robj *o;
 
+    if (hashKeyValueLengthOverMax(c, c->argv[2], c->argv[3])) return;
     if ((o = hashTypeLookupWriteOrCreate(c,c->argv[1])) == NULL) return;
+    if (hashEntryCountOverMax(c, o, 1)) return;
+
     hashTypeTryConversion(o,c->argv,2,3);
     hashTypeTryObjectEncoding(o,&c->argv[2], &c->argv[3]);
     update = hashTypeSet(o,c->argv[2],c->argv[3]);
@@ -499,7 +533,10 @@ void hsetCommand(client *c) {
 
 void hsetnxCommand(client *c) {
     robj *o;
+
+    if (hashKeyValueLengthOverMax(c, c->argv[2], c->argv[3])) return;
     if ((o = hashTypeLookupWriteOrCreate(c,c->argv[1])) == NULL) return;
+    if (hashEntryCountOverMax(c, o, 1)) return;
     hashTypeTryConversion(o,c->argv,2,3);
 
     if (hashTypeExists(o, c->argv[2])) {
@@ -523,7 +560,14 @@ void hmsetCommand(client *c) {
         return;
     }
 
+    if (server.hash_key_maxlength || server.hash_value_maxlength) {
+        for (i = 2; i < c->argc; i += 2) {
+            if (hashKeyValueLengthOverMax(c, c->argv[i], c->argv[i+1])) return;
+        }
+    }
+
     if ((o = hashTypeLookupWriteOrCreate(c,c->argv[1])) == NULL) return;
+    if (hashEntryCountOverMax(c, o, c->argc/2-1)) return;
     hashTypeTryConversion(o,c->argv,2,c->argc-1);
     for (i = 2; i < c->argc; i += 2) {
         hashTypeTryObjectEncoding(o,&c->argv[i], &c->argv[i+1]);

@@ -1492,6 +1492,16 @@ void initServerConfig(void) {
     server.maxmemory = CONFIG_DEFAULT_MAXMEMORY;
     server.maxmemory_policy = CONFIG_DEFAULT_MAXMEMORY_POLICY;
     server.maxmemory_samples = CONFIG_DEFAULT_MAXMEMORY_SAMPLES;
+    server.string_value_maxlength = CONFIG_DEFAULT_STRING_VALUE_MAXLENGTH;
+    server.hash_entry_maxcount = CONFIG_DEFAULT_HASH_ENTRY_MAXCOUNT;
+    server.hash_key_maxlength = CONFIG_DEFAULT_HASH_KEY_MAXLENGTH;
+    server.hash_value_maxlength = CONFIG_DEFAULT_HASH_VALUE_MAXLENGTH;
+    server.set_entry_maxcount = CONFIG_DEFAULT_SET_ENTRY_MAXCOUNT;
+    server.set_value_maxlength = CONFIG_DEFAULT_SET_VALUE_MAXLENGTH;
+    server.list_entry_maxcount = CONFIG_DEFAULT_LIST_ENTRY_MAXCOUNT;
+    server.list_value_maxlength = CONFIG_DEFAULT_LIST_VALUE_MAXLENGTH;
+    server.zset_entry_maxcount = CONFIG_DEFAULT_ZSET_ENTRY_MAXCOUNT;
+    server.zset_value_maxlength = CONFIG_DEFAULT_ZSET_VALUE_MAXLENGTH;
     server.hash_max_ziplist_entries = OBJ_HASH_MAX_ZIPLIST_ENTRIES;
     server.hash_max_ziplist_value = OBJ_HASH_MAX_ZIPLIST_VALUE;
     server.list_max_ziplist_size = OBJ_LIST_MAX_ZIPLIST_SIZE;

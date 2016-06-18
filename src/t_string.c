@@ -64,9 +64,21 @@ static int checkStringLength(client *c, long long size) {
 #define OBJ_SET_EX (1<<2)     /* Set if time in seconds is given */
 #define OBJ_SET_PX (1<<3)     /* Set if time in ms in given */
 
+int stringValueLengthOverMax(client *c, robj *val) {
+    if (server.string_value_maxlength) {
+        size_t len = stringObjectLen(val);
+        if (len > server.string_value_maxlength) {
+            addReplyErrorFormat(c,"string value length exceed the max(%zd), length=%zd", server.string_value_maxlength, len);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void setGenericCommand(client *c, int flags, robj *key, robj *val, robj *expire, int unit, robj *ok_reply, robj *abort_reply) {
     long long milliseconds = 0; /* initialized to avoid any harmness warning */
 
+    if (stringValueLengthOverMax(c, val)) return;
     if (expire) {
         if (getLongLongFromObjectOrReply(c, expire, &milliseconds, NULL) != C_OK)
             return;
@@ -174,6 +186,7 @@ void getCommand(client *c) {
 }
 
 void getsetCommand(client *c) {
+    if (stringValueLengthOverMax(c, c->argv[2])) return;
     if (getGenericCommand(c) == C_ERR) return;
     c->argv[2] = tryObjectEncoding(c->argv[2]);
     setKey(c->db,c->argv[1],c->argv[2]);
@@ -303,6 +316,13 @@ void msetGenericCommand(client *c, int nx) {
         addReplyError(c,"wrong number of arguments for MSET");
         return;
     }
+
+    if (server.string_value_maxlength) {
+        for (j = 2; j < c->argc; j += 2) {
+            if (stringValueLengthOverMax(c, c->argv[j])) return;
+        }   
+    }
+
     /* Handle the NX flag. The MSETNX semantic is to return zero and don't
      * set nothing at all if at least one already key exists. */
     if (nx) {

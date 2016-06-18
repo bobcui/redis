@@ -190,6 +190,28 @@ void listTypeConvert(robj *subject, int enc) {
     }
 }
 
+int listValueLengthOverMax(client *c, robj *v) {
+    if (server.list_value_maxlength) {
+        size_t len = stringObjectLen(v);
+        if (len > server.list_value_maxlength) {
+            addReplyErrorFormat(c,"list value length exceed the max(%zd), length=%zd", server.list_value_maxlength, len);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int listEntryCountOverMax(client *c, robj *o, int count) {
+    if (server.list_entry_maxcount) {
+        size_t afterCount = listTypeLength(o) + count;
+        if (afterCount > server.list_entry_maxcount) {
+            addReplyErrorFormat(c,"list entry count exceed the max(%zd), entry count will be %lu", server.list_entry_maxcount, afterCount);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /*-----------------------------------------------------------------------------
  * List Commands
  *----------------------------------------------------------------------------*/
@@ -201,6 +223,20 @@ void pushGenericCommand(client *c, int where) {
     if (lobj && lobj->type != OBJ_LIST) {
         addReply(c,shared.wrongtypeerr);
         return;
+    }
+
+    if (server.list_entry_maxcount) {
+        size_t nowCount = lobj? listTypeLength(lobj) : 0;
+        size_t afterCount = nowCount + c->argc - 2;
+        if (afterCount > server.list_entry_maxcount) {
+            addReplyErrorFormat(c,"list entry count exceed the max(%zd), entry count will be %lu", server.list_entry_maxcount, afterCount);
+            return;
+        }
+    }
+    if (server.list_value_maxlength) {
+        for (j = 2; j < c->argc; j++) {
+            if (listValueLengthOverMax(c, c->argv[j])) return;
+        }
     }
 
     for (j = 2; j < c->argc; j++) {
@@ -238,8 +274,10 @@ void pushxGenericCommand(client *c, robj *refval, robj *val, int where) {
     listTypeEntry entry;
     int inserted = 0;
 
+    if (listValueLengthOverMax(c, val)) return;
     if ((subject = lookupKeyWriteOrReply(c,c->argv[1],shared.czero)) == NULL ||
         checkType(c,subject,OBJ_LIST)) return;
+    if (listEntryCountOverMax(c, subject, 1)) return;
 
     if (refval != NULL) {
         /* Seek refval from head to tail */
@@ -337,6 +375,13 @@ void lsetCommand(client *c) {
 
     if ((getLongFromObjectOrReply(c, c->argv[2], &index, NULL) != C_OK))
         return;
+
+    if (server.list_value_maxlength) {
+        if (sdsEncodedObject(value) && sdslen(value->ptr) > server.list_value_maxlength) {
+            addReplyErrorFormat(c,"list value length exceed the max(%zd), length=%zd", server.list_value_maxlength, sdslen(value->ptr));
+            return;
+        }
+    }
 
     if (o->encoding == OBJ_ENCODING_QUICKLIST) {
         quicklist *ql = o->ptr;

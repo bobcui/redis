@@ -138,6 +138,18 @@ typedef long long mstime_t; /* millisecond time type. */
 #define CONFIG_MIN_RESERVED_FDS 32
 #define CONFIG_DEFAULT_LATENCY_MONITOR_THRESHOLD 0
 
+/* default key value size limit */
+#define CONFIG_DEFAULT_STRING_VALUE_MAXLENGTH 0
+#define CONFIG_DEFAULT_HASH_ENTRY_MAXCOUNT 0
+#define CONFIG_DEFAULT_HASH_KEY_MAXLENGTH 0
+#define CONFIG_DEFAULT_HASH_VALUE_MAXLENGTH 0
+#define CONFIG_DEFAULT_SET_ENTRY_MAXCOUNT 0
+#define CONFIG_DEFAULT_SET_VALUE_MAXLENGTH 0
+#define CONFIG_DEFAULT_LIST_ENTRY_MAXCOUNT 0
+#define CONFIG_DEFAULT_LIST_VALUE_MAXLENGTH 0
+#define CONFIG_DEFAULT_ZSET_ENTRY_MAXCOUNT 0
+#define CONFIG_DEFAULT_ZSET_VALUE_MAXLENGTH 0
+
 #define ACTIVE_EXPIRE_CYCLE_LOOKUPS_PER_LOOP 20 /* Loopkups per loop. */
 #define ACTIVE_EXPIRE_CYCLE_FAST_DURATION 1000 /* Microseconds */
 #define ACTIVE_EXPIRE_CYCLE_SLOW_TIME_PERC 25 /* CPU max % for keys collection */
@@ -969,6 +981,18 @@ struct redisServer {
     int watchdog_period;  /* Software watchdog period in ms. 0 = off */
     /* System hardware info */
     size_t system_memory_size;  /* Total memory in system as reported by OS */
+
+    /* key value size limit */
+    size_t string_value_maxlength;
+    size_t hash_entry_maxcount;
+    size_t hash_key_maxlength;
+    size_t hash_value_maxlength;
+    size_t set_entry_maxcount;
+    size_t set_value_maxlength;
+    size_t list_entry_maxcount;
+    size_t list_value_maxlength;
+    size_t zset_entry_maxcount;
+    size_t zset_value_maxlength;
 };
 
 typedef struct pubsubPattern {

@@ -284,6 +284,23 @@ void saddCommand(client *c) {
         }
     }
 
+    if (server.set_entry_maxcount) {
+        size_t afterCount = setTypeSize(set) + c->argc - 2;
+        if (afterCount > server.set_entry_maxcount) {
+            addReplyErrorFormat(c,"set entry count exceed the max(%zd), entry count will be %lu", server.set_entry_maxcount, afterCount);
+            return;
+        }
+    }
+    if (server.set_value_maxlength) {
+        for (j = 2; j < c->argc; j++) {
+            size_t len = stringObjectLen(c->argv[j]);
+            if (len > server.set_value_maxlength) {
+                addReplyErrorFormat(c,"set value length exceed the max(%zd), length=%zd", server.set_value_maxlength, len);
+                return;
+            }
+        }
+    }
+
     for (j = 2; j < c->argc; j++) {
         c->argv[j] = tryObjectEncoding(c->argv[j]);
         if (setTypeAdd(set,c->argv[j])) added++;

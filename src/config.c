@@ -608,6 +608,26 @@ void loadServerConfigFromString(char *config) {
                 err = sentinelHandleConfiguration(argv+1,argc-1);
                 if (err) goto loaderr;
             }
+        } else if (!strcasecmp(argv[0],"string-value-maxlength") && argc == 2) {
+            server.string_value_maxlength = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"hash-entry-maxcount") && argc == 2) {
+            server.hash_entry_maxcount = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"hash-key-maxlength") && argc == 2) {
+            server.hash_key_maxlength = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"hash-value-maxlength") && argc == 2) {
+            server.hash_value_maxlength = memtoll(argv[1], NULL);                        
+        } else if (!strcasecmp(argv[0],"set-entry-maxcount") && argc == 2) {
+            server.set_entry_maxcount = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"set-value-maxlength") && argc == 2) {
+            server.set_value_maxlength = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"list-entry-maxcount") && argc == 2) {
+            server.list_entry_maxcount = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"list-value-maxlength") && argc == 2) {
+            server.list_value_maxlength = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"zset-entry-maxcount") && argc == 2) {
+            server.zset_entry_maxcount = memtoll(argv[1], NULL);
+        } else if (!strcasecmp(argv[0],"zset-value-maxlength") && argc == 2) {
+            server.zset_value_maxlength = memtoll(argv[1], NULL);
         } else {
             err = "Bad directive or wrong number of arguments"; goto loaderr;
         }
@@ -979,6 +999,27 @@ void configSetCommand(client *c) {
     } config_set_enum_field(
       "appendfsync",server.aof_fsync,aof_fsync_enum) {
 
+    } config_set_numerical_field(
+      "string-value-maxlength",server.string_value_maxlength,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "hash-entry-maxcount",server.hash_entry_maxcount,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "hash-key-maxlength",server.hash_key_maxlength,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "hash-value-maxlength",server.hash_value_maxlength,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "set-entry-maxcount",server.set_entry_maxcount,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "set-value-maxlength",server.set_value_maxlength,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "list-entry-maxcount",server.list_entry_maxcount,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "list-value-maxlength",server.list_value_maxlength,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "zset-entry-maxcount",server.zset_entry_maxcount,0,LLONG_MAX) {
+    } config_set_numerical_field(
+      "zset-value-maxlength",server.zset_value_maxlength,0,LLONG_MAX) {
+
     /* Everyhing else is an error... */
     } config_set_else {
         addReplyErrorFormat(c,"Unsupported CONFIG parameter: %s",
@@ -1052,6 +1093,18 @@ void configGetCommand(client *c) {
     /* Numerical values */
     config_get_numerical_field("maxmemory",server.maxmemory);
     config_get_numerical_field("maxmemory-samples",server.maxmemory_samples);
+
+    config_get_numerical_field("string-value-maxlength",server.string_value_maxlength);
+    config_get_numerical_field("hash-entry-maxcount",server.hash_entry_maxcount);
+    config_get_numerical_field("hash-key-maxlength",server.hash_key_maxlength);
+    config_get_numerical_field("hash-value-maxlength",server.hash_value_maxlength);
+    config_get_numerical_field("set-entry-maxcount",server.set_entry_maxcount);
+    config_get_numerical_field("set-value-maxlength",server.set_value_maxlength);
+    config_get_numerical_field("list-entry-maxcount",server.list_entry_maxcount);
+    config_get_numerical_field("list-value-maxlength",server.list_value_maxlength);
+    config_get_numerical_field("zset-entry-maxcount",server.zset_entry_maxcount);
+    config_get_numerical_field("zset-value-maxlength",server.zset_value_maxlength);
+
     config_get_numerical_field("timeout",server.maxidletime);
     config_get_numerical_field("auto-aof-rewrite-percentage",
             server.aof_rewrite_perc);
