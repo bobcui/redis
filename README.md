@@ -1,19 +1,16 @@
-# length and entry count limits on some types, set 0 if no limit
-#
-# string-value-maxlength 0
+What is New?
+--------------
 
-# hash-entry-maxcount 0
-# hash-key-maxlength 0
-# hash-value-maxlength 0
+Add length and entry count limits on some types:
 
-# set-entry-maxcount 0
-# set-value-maxlength 0
-
-# list-entry-maxcount 0
-# list-value-maxlength 0
-
-
-This README is just a fast *quick start* document. You can find more detailed documentation at http://redis.io.
+* string-value-maxlength
+* hash-entry-maxcount
+* hash-key-maxlength
+* hash-value-maxlength
+* set-entry-maxcount
+* set-value-maxlength
+* list-entry-maxcount
+* list-value-maxlength
 
 What is Redis?
 --------------
