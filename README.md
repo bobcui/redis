@@ -12,6 +12,8 @@ Add length and entry count limits on some types in redis.conf
 * list-entry-maxcount
 * list-value-maxlength
 
+Add directory diveinto for fast learning redis source code
+
 What is Redis?
 --------------
 
