@@ -1,7 +1,7 @@
 What is New?
 --------------
 
-Add length and entry count limits on some types:
+Add length and entry count limits on some types in redis.conf
 
 * string-value-maxlength
 * hash-entry-maxcount
